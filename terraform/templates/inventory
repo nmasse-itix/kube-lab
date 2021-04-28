@@ -1,0 +1,64 @@
+[all]
+%{for host in masters~}
+${host.hostname} ansible_host=${host.ip} etcd_member_name=${host.name}
+%{endfor~}
+%{for host in workers~}
+${host.hostname} ansible_host=${host.ip}
+%{endfor~}
+
+[all:vars]
+ansible_become=yes
+ansible_user=nicolas
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
+
+# Store the .kube/config file locally
+kubeconfig_localhost=true
+
+# Configure the Load Balancer in front of the api-server
+loadbalancer_apiserver={"address":"${lb_node.ip}","port":6443}
+apiserver_loadbalancer_domain_name=${api_endpoint}
+
+[kube-node:vars]
+# Add a label to all worker nodes
+node_labels={"worker": "true"}
+
+[k8s-cluster:vars]
+# Enable the Nginx ingress controller
+ingress_nginx_enabled=true
+ingress_nginx_nodeselector={"worker":"true"}
+
+# Enable the Kubernetes dashboard
+dashboard_enabled=true
+
+# ## configure a bastion host if your nodes are not directly reachable
+# [bastion]
+# bastion ansible_host=x.x.x.x ansible_user=some_user
+
+# When kube-node contains etcd, you define your etcd cluster to be as well
+# schedulable for Kubernetes workloads. If you want it a standalone, make
+# sure those groups do not intersect. If you want the server to act both as
+# master and node, the server must be defined on both groups kube-master and
+# kube-node. If you want a standalone and unschedulable master, the server
+# must be defined only in the kube-master and not kube-node.
+
+[kube-master]
+%{for host in masters~}
+${host.hostname}
+%{endfor~}
+
+[etcd]
+%{for host in masters~}
+${host.hostname}
+%{endfor~}
+
+[kube-node]
+%{for host in workers~}
+${host.hostname}
+%{endfor~}
+
+[calico-rr]
+
+[k8s-cluster:children]
+kube-master
+kube-node
+calico-rr
