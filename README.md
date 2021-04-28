@@ -91,13 +91,13 @@ terraform apply -var cluster_name=$CLUSTER_NAME
 Set the default cluster variables.
 
 ```sh
+cd ../kubespray
 cp -r inventory/sample/group_vars inventory/$CLUSTER_NAME/group_vars
 ```
 
 Install Kubernetes.
 
 ```sh
-cd ../kubespray
 ansible -i inventory/$CLUSTER_NAME/inventory.ini all -m wait_for -a "port=22"
 ansible-playbook -i inventory/$CLUSTER_NAME/inventory.ini cluster.yml
 sudo chown -R $USER inventory/$CLUSTER_NAME/artifacts/
