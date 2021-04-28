@@ -64,7 +64,7 @@ export CLUSTER_NAME=kube
 
 Add the DNS entries to your DNS server (dnsmasq in the following example).
 
-```sh
+```ini
 # Hosts
 host-record=lb.kube.itix.lab,192.168.16.4,24h
 host-record=storage.kube.itix.lab,192.168.16.6,24h
